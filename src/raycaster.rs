@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::graphics::*;
 use nalgebra::{Vector2, Rotation2};
 
@@ -181,10 +183,12 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
     }
 }
 
-pub fn input(key: InputKeycode, delta_time: f64, scene: &mut Scene) {
+pub fn input(keys: HashSet<InputKeycode>, mouse_delta: f64, delta_time: f64, scene: &mut Scene) {
 
-    let move_speed = (MOVE_SPEED * delta_time) + 1.0;
-    let rot_speed = (ROT_SPEED * delta_time) + 1.0;
+    // TODO process all inputs in one frame instead of one
+
+    let move_speed = (MOVE_SPEED * delta_time);
+    let rot_speed = (ROT_SPEED * delta_time);
 
     //println!("move {} rot {}", move_speed, rot_speed);
 
@@ -194,36 +198,46 @@ pub fn input(key: InputKeycode, delta_time: f64, scene: &mut Scene) {
 
     let mut wish_pos = player.pos;
 
-    match key {
-        InputKeycode::W => {
+    for key in keys {
+        match key {
+            InputKeycode::W => {
 
-            wish_pos += player.dir * move_speed;
+                wish_pos += player.dir * move_speed;
 
-        },
-        InputKeycode::S => {
+            },
+            InputKeycode::S => {
 
-            wish_pos -= player.dir * move_speed;
+                wish_pos -= player.dir * move_speed;
 
-        },
-        // rotate to the right
-        InputKeycode::D => {
+            },
+            // rotate to the right
+            InputKeycode::D => {
 
-            let rot = Rotation2::new(0.1);
-            player.dir = rot * player.dir;
+                let rot = Rotation2::new(ROT_SPEED * delta_time);
+                player.dir = rot * player.dir;
 
-        },
-        // rotate to the left
-        InputKeycode::A => {
+            },
+            // rotate to the left
+            InputKeycode::A => {
 
-            let rot = Rotation2::new(-0.1);
-            player.dir = rot * player.dir;
+                let rot = Rotation2::new(-ROT_SPEED * delta_time);
+                player.dir = rot * player.dir;
 
-        },
-        _ => {}
+            },
+            _ => {}
+        }
     }
 
-    if MAP[wish_pos.x as usize][wish_pos.y as usize] == 0 {
-        player.pos = wish_pos;
+    let rot = Rotation2::new(mouse_delta * delta_time);
+    player.dir = rot * player.dir;
+
+    // TODO allow sliding off walls
+    if MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
+        player.pos.x = wish_pos.x;
+    }
+
+    if MAP[player.pos.x as usize][wish_pos.y as usize] == 0 {
+        player.pos.y = wish_pos.y;
     }
 
     //println!("{:?}", player.pos);

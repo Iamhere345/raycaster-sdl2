@@ -1,8 +1,10 @@
 use std::time::Instant;
+use std::collections::HashSet;
 
 use sdl2::pixels::Color; 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::sys::KeyCode;
 use std::time::Duration;
 
 pub mod graphics;
@@ -30,6 +32,8 @@ fn main() {
         .build()
         .expect("Unable to build window");
 
+    let mouse = sdl_ctx.mouse();
+
     let mut canvas = window.into_canvas().build().unwrap();
 
     canvas.set_draw_color(Color::RGB(0, 255, 25));
@@ -48,6 +52,9 @@ fn main() {
 
     }
 
+    mouse.capture(true);
+
+    let mut paused = false;
     'main: loop {
         /*
         i = (i + 1) % 255;
@@ -69,17 +76,29 @@ fn main() {
                 Event::Quit {..} |
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'main
+                },
+                /*
+                Event::KeyDown { keycode: Some(Keycode::Tab), .. } => {
+                    !paused;
+                    mouse.capture();
                 }
-                Event::KeyDown {keycode, ..} => {
-                    if keycode.is_some() {
-                        input(keycode.unwrap(), delta_time, &mut scene)
-                    }
-                }
+                */
                 _ => {}
             }
         }
 
+        if paused {
+            std::thread::sleep(Duration::from_millis(1));
+            continue;
+        }
 
+        let keys: HashSet<_> = event_pump
+            .keyboard_state()
+            .pressed_scancodes()
+            .filter_map(Keycode::from_scancode)
+            .collect();
+
+        input(keys, event_pump.relative_mouse_state().x() as f64, delta_time, &mut scene);
 
         update(&mut canvas, &mut scene);
 

@@ -38,7 +38,7 @@ impl CanvasColour {
     pub const GREEN: CanvasColour = CanvasColour::new(0, 255, 0);
     pub const BLUE: CanvasColour = CanvasColour::new(0, 0, 255);
     pub const WHITE: CanvasColour = CanvasColour::new(255, 255, 255);
-    pub const TEAL: CanvasColour = CanvasColour::new(255, 253, 133);
+    pub const TEAL: CanvasColour = CanvasColour::new(2, 247, 247);
 
 }
 
