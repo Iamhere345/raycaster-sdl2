@@ -1,13 +1,11 @@
 use crate::graphics::*;
-use crate::vec2::Vec2;
+use nalgebra::{Vector2, Rotation2};
 
 const MAP_HEIGHT: usize = 24;
 const MAP_WIDTH: usize = 24;
 
 const MOVE_SPEED: f64 = 5.0;
 const ROT_SPEED: f64 = 3.0;
-
-// TODO use nalgebra instead of vec2.rs
 
 const MAP: [[u32; MAP_WIDTH]; MAP_HEIGHT] =
 [
@@ -44,9 +42,14 @@ enum SideHit {
 }
 #[derive(Debug)]
 pub struct Player {
-    pos: Vec2<f64>,
-    dir: Vec2<f64>,
-    plane: Vec2<f64>
+    pos: Vector2<f64>,
+    dir: Vector2<f64>,
+}
+
+impl Player {
+    pub fn plane(&self) -> Vector2<f64> {
+        Vector2::new(-self.dir.y, self.dir.x)
+    }
 }
 
 pub struct Scene {
@@ -57,9 +60,8 @@ impl Scene {
     pub fn init() -> Scene {
         Scene {
             plr: Player {
-                pos: Vec2::<f64>::new(22.0, 12.0),
-                dir: Vec2::<f64>::new(-1.0, 0.0),
-                plane: Vec2::<f64>::new(0.0, 0.66)
+                pos: Vector2::new(22.0, 12.0),
+                dir: Vector2::new(-1.0, 0.0),
             }
         }
     }
@@ -78,26 +80,23 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
         // any ray point on the camera plan can be calculated with the sum of the direction vector
         // and a part of the plane vector, multiplied by the x position on the camera plane.
-        let ray_dir = Vec2::<f64>::new(
-            player.dir.x + player.plane.x * camera_x,
-            player.dir.y + player.plane.y * camera_x
-        );
+        let ray_dir = player.dir + player.plane() * camera_x;
 
         // which coordinate on the map the ray is in
-        let mut map_pos = Vec2::<i32>::new(player.pos.x.floor() as i32, player.pos.y.floor() as i32);
+        let mut map_pos = Vector2::new(player.pos.x.floor() as i32, player.pos.y.floor() as i32);
 
         // length of the ray from the current position to the next x/y side
-        let mut side_dist = Vec2::<f64>::new(0.0, 0.0);
+        let mut side_dist = Vector2::new(0.0, 0.0);
 
         // length of the ray from one x/y side to the next x/y side
-        let delta_dist = Vec2::<f64>::new(
+        let delta_dist = Vector2::new(
             if ray_dir.x == 0.0 { f64::INFINITY } else { (1.0 / ray_dir.x).abs() },
             if ray_dir.y == 0.0 { f64::INFINITY } else { (1.0 / ray_dir.y).abs() }
         );
 
         let mut wall_dist = 0.0;
 
-        let mut ray_step = Vec2::<i32>::new(0, 0);
+        let mut ray_step = Vector2::new(0, 0);
 
         let mut hit_info: Option<SideHit> = None;
 
@@ -182,7 +181,7 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
     }
 }
 
-pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
+pub fn input(key: InputKeycode, delta_time: f64, scene: &mut Scene) {
 
     let move_speed = (MOVE_SPEED * delta_time) + 1.0;
     let rot_speed = (ROT_SPEED * delta_time) + 1.0;
@@ -191,83 +190,40 @@ pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
 
     let player = &mut scene.plr;
 
-    delta_time = 1.0;
+    //delta_time = 1.0;
+
+    let mut wish_pos = player.pos;
 
     match key {
         InputKeycode::W => {
 
-            // TODO this is also wrong
-            let wish_pos = Vec2::<f64>::new((player.pos.x + player.dir.x) * move_speed, (player.pos.y + player.dir.y) * move_speed);
-
-            if wish_pos.x <= MAP_WIDTH as f64 && MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
-                player.pos.x = wish_pos.x;
-                println!("x");
-            } else {
-                println!("nx");
-            }
-
-            if wish_pos.y <= MAP_HEIGHT as f64 && MAP[player.pos.x as usize][wish_pos.y as usize] == 0 {
-                player.pos.y = wish_pos.y;
-                println!("y");
-            } else {
-                println!("ny");
-            }
+            wish_pos += player.dir * move_speed;
 
         },
         InputKeycode::S => {
 
-            let wish_pos = Vec2::<f64>::new((player.pos.x - player.dir.x) * move_speed, (player.pos.y - player.dir.y) * move_speed);
-
-            if wish_pos.x <= MAP_WIDTH as f64 && MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
-                player.pos.x = wish_pos.x;
-                println!("x");
-            } else {
-                println!("nx");
-            }
-
-            if wish_pos.y <= MAP_HEIGHT as f64 && MAP[player.pos.x as usize][wish_pos.y as usize] == 0 {
-                player.pos.y = wish_pos.y;
-                println!("y");
-            } else {
-                println!("ny");
-            }
+            wish_pos -= player.dir * move_speed;
 
         },
         // rotate to the right
-        // TODO this seems to just be changing the sign of dir
-        // TODO the camera plane isn't perpendicular to the player
         InputKeycode::D => {
 
-            // rotate player dir
-            let old_dir_x = player.dir.x;
-            
-            player.dir.x = player.dir.x * -rot_speed.cos() - player.dir.y * rot_speed.sin();
-            player.dir.y = old_dir_x * rot_speed.sin() + player.dir.y * -rot_speed.cos();
-
-            // rotate camera plane
-            let old_plane_x = player.plane.x;
-
-            player.plane.x = player.plane.x * -rot_speed.cos() - player.plane.y * rot_speed.sin();
-            player.plane.y = old_plane_x * rot_speed.sin() - player.plane.y * -rot_speed.cos();
+            let rot = Rotation2::new(0.1);
+            player.dir = rot * player.dir;
 
         },
         // rotate to the left
         InputKeycode::A => {
 
-            // rotate player dir
-            let old_dir_x = player.dir.x;
-            
-            //player.dir.x = player.dir.x * rot_speed.cos() - player.dir.y * -rot_speed.sin();
-            //player.dir.y = old_dir_x * -rot_speed.sin() + player.dir.y * rot_speed.cos();
-
-            // rotate camera plane
-            let old_plane_x = player.plane.x;
-
-            player.plane.x = player.plane.x * rot_speed.cos() - player.plane.y * rot_speed.sin();
-            player.plane.y = old_plane_x * rot_speed.sin() - player.plane.y * rot_speed.cos();
+            let rot = Rotation2::new(-0.1);
+            player.dir = rot * player.dir;
 
         },
         _ => {}
+    }
+
+    if MAP[wish_pos.x as usize][wish_pos.y as usize] == 0 {
+        player.pos = wish_pos;
     }
 
     //println!("{:?}", player.pos);

@@ -25,7 +25,7 @@ fn main() {
     let sdl_ctx = sdl2::init().unwrap();
     let video = sdl_ctx.video().unwrap();
 
-    let window = video.window("Raytracing", SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
+    let window = video.window("Raycasting", SCREEN_WIDTH as u32, SCREEN_HEIGHT as u32)
         .position_centered()
         .build()
         .expect("Unable to build window");
