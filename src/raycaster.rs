@@ -7,6 +7,8 @@ const MAP_WIDTH: usize = 24;
 const MOVE_SPEED: f64 = 5.0;
 const ROT_SPEED: f64 = 3.0;
 
+// TODO use nalgebra instead of vec2.rs
+
 const MAP: [[u32; MAP_WIDTH]; MAP_HEIGHT] =
 [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -165,7 +167,9 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
         }
 
-        let line_height: i32 = SCREEN_HEIGHT as i32 / wall_dist as i32;
+        let line_height: i32 = (SCREEN_HEIGHT as f64 / wall_dist) as i32;
+
+        //println!("{}", line_height);
 
         let mut draw_start = -line_height / 2 + SCREEN_HEIGHT as i32 / 2;
         if draw_start < 0 { draw_start = 0; }
@@ -183,7 +187,7 @@ pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
     let move_speed = (MOVE_SPEED * delta_time) + 1.0;
     let rot_speed = (ROT_SPEED * delta_time) + 1.0;
 
-    println!("move {} rot {}", move_speed, rot_speed);
+    //println!("move {} rot {}", move_speed, rot_speed);
 
     let player = &mut scene.plr;
 
@@ -192,14 +196,21 @@ pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
     match key {
         InputKeycode::W => {
 
+            // TODO this is also wrong
             let wish_pos = Vec2::<f64>::new((player.pos.x + player.dir.x) * move_speed, (player.pos.y + player.dir.y) * move_speed);
 
-            if MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
+            if wish_pos.x <= MAP_WIDTH as f64 && MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
                 player.pos.x = wish_pos.x;
+                println!("x");
+            } else {
+                println!("nx");
             }
 
-            if MAP[player.pos.x as usize][wish_pos.y as usize] == 0 {
+            if wish_pos.y <= MAP_HEIGHT as f64 && MAP[player.pos.x as usize][wish_pos.y as usize] == 0 {
                 player.pos.y = wish_pos.y;
+                println!("y");
+            } else {
+                println!("ny");
             }
 
         },
@@ -207,12 +218,18 @@ pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
 
             let wish_pos = Vec2::<f64>::new((player.pos.x - player.dir.x) * move_speed, (player.pos.y - player.dir.y) * move_speed);
 
-            if MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
+            if wish_pos.x <= MAP_WIDTH as f64 && MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
                 player.pos.x = wish_pos.x;
+                println!("x");
+            } else {
+                println!("nx");
             }
 
-            if MAP[player.pos.x as usize][wish_pos.y as usize] == 0 {
+            if wish_pos.y <= MAP_HEIGHT as f64 && MAP[player.pos.x as usize][wish_pos.y as usize] == 0 {
                 player.pos.y = wish_pos.y;
+                println!("y");
+            } else {
+                println!("ny");
             }
 
         },
@@ -224,14 +241,14 @@ pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
             // rotate player dir
             let old_dir_x = player.dir.x;
             
-            player.dir.x = player.dir.x * -rot_speed.cos() - player.dir.y * -rot_speed.sin();
-            player.dir.y = old_dir_x * -rot_speed.sin() + player.dir.y * -rot_speed.cos();
+            player.dir.x = player.dir.x * -rot_speed.cos() - player.dir.y * rot_speed.sin();
+            player.dir.y = old_dir_x * rot_speed.sin() + player.dir.y * -rot_speed.cos();
 
             // rotate camera plane
             let old_plane_x = player.plane.x;
 
-            player.plane.x = player.plane.x * -rot_speed.cos() - player.plane.y * -rot_speed.sin();
-            player.plane.y = old_plane_x * -rot_speed.sin() - player.plane.y * -rot_speed.cos();
+            player.plane.x = player.plane.x * -rot_speed.cos() - player.plane.y * rot_speed.sin();
+            player.plane.y = old_plane_x * rot_speed.sin() - player.plane.y * -rot_speed.cos();
 
         },
         // rotate to the left
@@ -240,8 +257,8 @@ pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
             // rotate player dir
             let old_dir_x = player.dir.x;
             
-            player.dir.x = player.dir.x * rot_speed.cos() - player.dir.y * rot_speed.sin();
-            player.dir.y = old_dir_x * rot_speed.sin() + player.dir.y * rot_speed.cos();
+            //player.dir.x = player.dir.x * rot_speed.cos() - player.dir.y * -rot_speed.sin();
+            //player.dir.y = old_dir_x * -rot_speed.sin() + player.dir.y * rot_speed.cos();
 
             // rotate camera plane
             let old_plane_x = player.plane.x;
@@ -252,5 +269,7 @@ pub fn input(key: InputKeycode, mut delta_time: f64, scene: &mut Scene) {
         },
         _ => {}
     }
+
+    //println!("{:?}", player.pos);
 
 }
