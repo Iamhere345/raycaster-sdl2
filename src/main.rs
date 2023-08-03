@@ -4,7 +4,6 @@ use std::collections::HashSet;
 use sdl2::pixels::Color; 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::sys::KeyCode;
 use std::time::Duration;
 
 pub mod graphics;
@@ -52,9 +51,10 @@ fn main() {
 
     }
 
-    mouse.capture(true);
+    mouse.set_relative_mouse_mode(true);
 
     let mut paused = false;
+    let mut mouse_captured = true;
     'main: loop {
         /*
         i = (i + 1) % 255;
@@ -77,12 +77,13 @@ fn main() {
                 Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
                     break 'main
                 },
-                /*
+                
                 Event::KeyDown { keycode: Some(Keycode::Tab), .. } => {
-                    !paused;
-                    mouse.capture();
+                    paused = !paused;
+                    mouse_captured = !mouse_captured;
+                    mouse.set_relative_mouse_mode(mouse_captured);
                 }
-                */
+                
                 _ => {}
             }
         }

@@ -185,10 +185,8 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
 pub fn input(keys: HashSet<InputKeycode>, mouse_delta: f64, delta_time: f64, scene: &mut Scene) {
 
-    // TODO process all inputs in one frame instead of one
-
-    let move_speed = (MOVE_SPEED * delta_time);
-    let rot_speed = (ROT_SPEED * delta_time);
+    let move_speed = MOVE_SPEED * delta_time;
+    let rot_speed = ROT_SPEED * delta_time;
 
     //println!("move {} rot {}", move_speed, rot_speed);
 
@@ -212,26 +210,34 @@ pub fn input(keys: HashSet<InputKeycode>, mouse_delta: f64, delta_time: f64, sce
             },
             // rotate to the right
             InputKeycode::D => {
-
-                let rot = Rotation2::new(ROT_SPEED * delta_time);
+                /*
+                let rot = Rotation2::new(rot_speed);
                 player.dir = rot * player.dir;
+                */
 
+                wish_pos.x -= player.dir.y * move_speed;
+                wish_pos.y += player.dir.x * move_speed;
+                
             },
             // rotate to the left
             InputKeycode::A => {
 
-                let rot = Rotation2::new(-ROT_SPEED * delta_time);
+                /*
+                let rot = Rotation2::new(-rot_speed);
                 player.dir = rot * player.dir;
+                */
+
+                wish_pos.x += player.dir.y * move_speed;
+                wish_pos.y -= player.dir.x * move_speed;
 
             },
             _ => {}
         }
     }
 
-    let rot = Rotation2::new(mouse_delta * delta_time);
+    let rot = Rotation2::new(mouse_delta * rot_speed);
     player.dir = rot * player.dir;
 
-    // TODO allow sliding off walls
     if MAP[wish_pos.x as usize][player.pos.y as usize] == 0 {
         player.pos.x = wish_pos.x;
     }
