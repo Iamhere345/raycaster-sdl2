@@ -6,9 +6,13 @@ use nalgebra::{Vector2, Rotation2};
 const MAP_HEIGHT: usize = 24;
 const MAP_WIDTH: usize = 24;
 
+const TEX_HEIGHT: u32 = 64;
+const TEX_WIDTH: u32 = 64;
+
 const MOVE_SPEED: f64 = 5.0;
 const ROT_SPEED: f64 = 3.0;
 
+/*
 const MAP: [[u32; MAP_WIDTH]; MAP_HEIGHT] =
 [
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -36,11 +40,40 @@ const MAP: [[u32; MAP_WIDTH]; MAP_HEIGHT] =
   [1,4,4,4,4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
   [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+*/
+
+const MAP: [[u32; MAP_WIDTH]; MAP_HEIGHT] =
+[
+  [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7],
+  [4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7],
+  [4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7],
+  [4,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7],
+  [4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7],
+  [4,0,4,0,0,0,0,5,5,5,5,5,5,5,5,5,7,7,0,7,7,7,7,7],
+  [4,0,5,0,0,0,0,5,0,5,0,5,0,5,0,5,7,0,0,0,7,7,7,1],
+  [4,0,6,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8],
+  [4,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,1],
+  [4,0,8,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8],
+  [4,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,7,7,7,1],
+  [4,0,0,0,0,0,0,5,5,5,5,0,5,5,5,5,7,7,7,7,7,7,7,1],
+  [6,6,6,6,6,6,6,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6],
+  [8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4],
+  [6,6,6,6,6,6,0,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6],
+  [4,4,4,4,4,4,0,4,4,4,6,0,6,2,2,2,2,2,2,2,3,3,3,3],
+  [4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2],
+  [4,0,0,0,0,0,0,0,0,0,0,0,6,2,0,0,5,0,0,2,0,0,0,2],
+  [4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2],
+  [4,0,6,0,6,0,0,0,0,4,6,0,0,0,0,0,5,0,0,0,0,0,0,2],
+  [4,0,0,5,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2],
+  [4,0,6,0,6,0,0,0,0,4,6,0,6,2,0,0,5,0,0,2,0,0,0,2],
+  [4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2],
+  [4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3]
+];
 
 #[derive(PartialEq, Clone, Copy)]
 enum SideHit {
     XSide,
-    YSize
+    YSide
 }
 #[derive(Debug)]
 pub struct Player {
@@ -55,17 +88,62 @@ impl Player {
 }
 
 pub struct Scene {
-    plr: Player
+    plr: Player,
+    textures: [Vec<CanvasColour>; 8]
 }
 
 impl Scene {
     pub fn init() -> Scene {
-        Scene {
-            plr: Player {
-                pos: Vector2::new(22.0, 12.0),
-                dir: Vector2::new(-1.0, 0.0),
+
+        let plr = Player {
+            pos: Vector2::new(22.0, 12.0),
+            dir: Vector2::new(-1.0, 0.0),
+        };
+
+
+		let mut textures: [Vec<CanvasColour>; 8] = [
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+			Vec::with_capacity((TEX_WIDTH * TEX_HEIGHT) as usize),
+		];
+
+		// :(
+		unsafe {
+			for mut vec in textures.iter_mut() {
+				vec.set_len((TEX_WIDTH * TEX_HEIGHT) as usize);
+			}
+		}
+
+        for x in 0..TEX_WIDTH {
+            for y in 0..TEX_HEIGHT {
+				
+				let xor_colour: u32 = (x * 256 / TEX_WIDTH) ^ (y * 256 / TEX_HEIGHT);
+				let y_colour: u32 = y * 256 / TEX_HEIGHT;
+				let xy_colour: u32 = y * 128 / TEX_HEIGHT + x * 128 / TEX_WIDTH;
+
+				// 65535 == 0xFFFF (i.e the maximum 16 bit value)
+				textures[0][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(65536 * 254 * (x != y && x != TEX_WIDTH - y) as u32);	// flat red texture with black cross
+				textures[1][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(xy_colour + 256 * xy_colour + 65536 * xy_colour);		// sloped greyscale
+				textures[2][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(256 * xy_colour + 65536 * xy_colour);					// sloped yellow gradient
+				textures[3][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(xor_colour + 256 * xor_colour + 65536 * xor_colour);		// xor greyscale
+				textures[4][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(256 * xor_colour);										// xor green
+				textures[5][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(65536 * 192 * (x % 16 != 0 && y % 16 != 0) as u32);		// red bricks
+				textures[6][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(65536 * y_colour);										// red gradient
+				textures[7][(TEX_WIDTH * x + y) as usize] = CanvasColour::from_u32(128 + 256 * 128 + 65536 * 128)							// flat grey
+
             }
         }
+
+        Scene {
+			plr: plr,
+			textures: textures
+		}
+
     }
 }
 
@@ -119,11 +197,10 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
         }
 
         let mut colour: CanvasColour = CanvasColour::WHITE;
+        let mut side: SideHit = SideHit::XSide;
 
         // DDA algorithm
         while hit_info.is_none() {
-
-            let mut side: SideHit = SideHit::XSide;
 
             // jump to the next square, either in the x direction or the y direction
             if side_dist.x < side_dist.y {
@@ -135,7 +212,7 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
                 side_dist.y += delta_dist.y;
                 map_pos.y += ray_step.y;
 
-                side = SideHit::YSize;
+                side = SideHit::YSide;
             }
 
             let coord = MAP[map_pos.x as usize][map_pos.y as usize];
@@ -147,7 +224,7 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
                     SideHit::XSide => {
                         wall_dist = side_dist.x - delta_dist.x;
                     },
-                    SideHit::YSize => {
+                    SideHit::YSide => {
                         wall_dist = side_dist.y - delta_dist.y
                     }
                 }
@@ -160,7 +237,7 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
                     _ => CanvasColour::WHITE
                 };
 
-                if side == SideHit::YSize {
+                if side == SideHit::YSide {
                     colour = colour / 2;
                 }
 
@@ -178,7 +255,54 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
         let mut draw_end = line_height / 2 + SCREEN_HEIGHT as i32 / 2;
         if draw_end < 0 { draw_end = 0; }
 
-        draw_line(screen, x as i32, draw_start, draw_end, colour);
+		let tex_index = MAP[map_pos.x as usize][map_pos.y as usize] - 1;	// -1 because on the map 0 is empty but the index 0 is used for textures
+
+		// x position of where the wall was hit
+		// FIXME
+		let mut wall_x = if side == SideHit::YSide {
+			player.pos.y + wall_dist * ray_dir.y
+		} else {
+			player.pos.x + wall_dist * ray_dir.x
+		};
+
+		println!("wall_x: {wall_x} floor: {}", wall_x.floor());
+
+		wall_x -= wall_x.floor();
+
+		//println!("wall_X: {}", wall_x);
+
+		// x coord on the texture
+		let mut tex_x = (wall_x * TEX_WIDTH as f64) as i32;
+		if side == SideHit::XSide && ray_dir.x > 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; }
+		if side == SideHit::YSide && ray_dir.y < 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; }
+		println!("tex_x: {tex_x}");
+
+		/*
+		affine texture mapping
+		*/
+
+		// how much to increase the texture coord per pixel
+		let tex_step = 1.0 * TEX_HEIGHT as f64 / line_height as f64;
+		// starting texture coordinate
+		let mut tex_coord = (draw_start - SCREEN_HEIGHT as i32 / 2 + line_height / 2) as f64 * tex_step;
+		for y in draw_start..draw_end {
+
+			let tex_y = tex_coord as i32 & (TEX_HEIGHT as i32 - 1);
+			tex_coord += tex_step;
+
+			//println!("tex_x: {} tex_y: {}, y: {}, x: {}", tex_x, tex_y, y, x);
+
+			let mut colour = scene.textures[tex_index as usize][TEX_HEIGHT as usize * tex_x as usize + tex_y as usize];
+
+			if side == SideHit::YSide {
+				colour = colour / 2;
+			}
+
+			draw_pixel(screen, x as i32, y, colour);
+
+		}
+
+        //draw_line(screen, x as i32, draw_start, draw_end, colour);
 
     }
 }

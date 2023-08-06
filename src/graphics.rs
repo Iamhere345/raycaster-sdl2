@@ -34,6 +34,15 @@ impl CanvasColour {
         [self.r, self.g, self.b]
     }
 
+    pub fn from_u32(from: u32) -> Self {
+        Self {
+            // the last byte in unused (but could be used for alpha)
+            r: ((from >> 0) & 255) as u8,
+            g: ((from >> 8) & 255) as u8,
+            b: ((from >> 16) & 255) as u8
+        }
+    }
+
     pub const RED: CanvasColour = CanvasColour::new(255, 0, 0);
     pub const GREEN: CanvasColour = CanvasColour::new(0, 255, 0);
     pub const BLUE: CanvasColour = CanvasColour::new(0, 0, 255);
@@ -80,5 +89,12 @@ pub fn draw_line(canvas: &mut Canvas<Window>, x: i32, start: i32, end: i32, colo
     
     canvas.set_draw_color(Color::RGB(colour.r, colour.g, colour.b));
     canvas.draw_line((x, start), (x, end)).unwrap();
+
+}
+
+pub fn draw_pixel(canvas: &mut Canvas<Window>, x: i32, y: i32, colour: CanvasColour) {
+
+    canvas.set_draw_color(Color::RGB(colour.r, colour.g, colour.b));
+    canvas.draw_point((x, y)).unwrap();
 
 }
