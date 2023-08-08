@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::{Mul, Div};
 use sdl2::pixels::Color;
 use sdl2::{keyboard::Keycode, render::Canvas};
@@ -16,9 +17,9 @@ pub type InputKeycode = Keycode;
 
 #[derive(Clone, Copy, Debug)]
 pub struct CanvasColour {
-    r: u8,
-    g: u8,
-    b: u8
+    pub r: u8,
+    pub g: u8,
+    pub b: u8
 }
 
 impl CanvasColour {
@@ -49,6 +50,12 @@ impl CanvasColour {
     pub const WHITE: CanvasColour = CanvasColour::new(255, 255, 255);
     pub const TEAL: CanvasColour = CanvasColour::new(2, 247, 247);
 
+}
+
+impl fmt::Display for CanvasColour {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({} {} {})", self.r, self.g, self.b)
+    }
 }
 
 impl Div<u8> for CanvasColour {
@@ -93,6 +100,13 @@ pub fn draw_line(canvas: &mut Canvas<Window>, x: i32, start: i32, end: i32, colo
 }
 
 pub fn draw_pixel(canvas: &mut Canvas<Window>, x: i32, y: i32, colour: CanvasColour) {
+
+    if x > SCREEN_WIDTH as i32 || x < SCREEN_WIDTH as i32 {
+        panic!("draw exceeded screen bounds (x: {x}, {SCREEN_WIDTH}");
+    }
+    if y > SCREEN_HEIGHT as i32 || y < SCREEN_HEIGHT as i32 {
+        panic!("draw exceeded screen bounds (y: {y}, {SCREEN_HEIGHT}");
+    }
 
     canvas.set_draw_color(Color::RGB(colour.r, colour.g, colour.b));
     canvas.draw_point((x, y)).unwrap();

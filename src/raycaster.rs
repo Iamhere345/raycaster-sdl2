@@ -273,8 +273,8 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
 		// x coord on the texture
 		let mut tex_x = (wall_x * TEX_WIDTH as f64) as i32;
-		if side == SideHit::XSide && ray_dir.x > 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; }
-		if side == SideHit::YSide && ray_dir.y < 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; }
+		if side == SideHit::XSide && ray_dir.x > 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; } else { println!("no XSide"); }
+		if side == SideHit::YSide && ray_dir.y < 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; } else { println!("no YSide") }
 		println!("tex_x: {tex_x}");
 
 		/*
@@ -285,6 +285,10 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 		let tex_step = 1.0 * TEX_HEIGHT as f64 / line_height as f64;
 		// starting texture coordinate
 		let mut tex_coord = (draw_start - SCREEN_HEIGHT as i32 / 2 + line_height / 2) as f64 * tex_step;
+
+        // TODO i think the issue is with line height or draw_end being way too high (maybe from an overflow)
+
+        /*
 		for y in draw_start..draw_end {
 
 			let tex_y = tex_coord as i32 & (TEX_HEIGHT as i32 - 1);
@@ -292,17 +296,28 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
 			//println!("tex_x: {} tex_y: {}, y: {}, x: {}", tex_x, tex_y, y, x);
 
-			let mut colour = scene.textures[tex_index as usize][TEX_HEIGHT as usize * tex_x as usize + tex_y as usize];
+			let mut colour = /*CanvasColour::TEAL;*/scene.textures[tex_index as usize][TEX_HEIGHT as usize * tex_x as usize + tex_y as usize];
+
+            println!("{y}/{draw_end}");
+
+            if colour.b != 0 {
+                //println!("{colour}");
+            }
 
 			if side == SideHit::YSide {
 				colour = colour / 2;
 			}
 
-			draw_pixel(screen, x as i32, y, colour);
+			//draw_pixel(screen, x as i32, y, colour);
+            draw_line(screen, x as i32, y, y, colour);
 
 		}
+        */
+        println!("end");
 
-        //draw_line(screen, x as i32, draw_start, draw_end, colour);
+        println!("start: {draw_start} end: {draw_end} line height: {line_height}");
+
+        draw_line(screen, x as i32, draw_start, draw_end, colour);
 
     }
 }
