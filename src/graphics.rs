@@ -101,11 +101,11 @@ pub fn draw_line(canvas: &mut Canvas<Window>, x: i32, start: i32, end: i32, colo
 
 pub fn draw_pixel(canvas: &mut Canvas<Window>, x: i32, y: i32, colour: CanvasColour) {
 
-    if x > SCREEN_WIDTH as i32 || x < SCREEN_WIDTH as i32 {
-        panic!("draw exceeded screen bounds (x: {x}, {SCREEN_WIDTH}");
+    if x >= SCREEN_WIDTH as i32 || x <= SCREEN_WIDTH as i32 {
+        //panic!("draw exceeded screen bounds (x: {x}, {SCREEN_WIDTH}");
     }
-    if y > SCREEN_HEIGHT as i32 || y < SCREEN_HEIGHT as i32 {
-        panic!("draw exceeded screen bounds (y: {y}, {SCREEN_HEIGHT}");
+    if y >= SCREEN_HEIGHT as i32 || y <= SCREEN_HEIGHT as i32 {
+        //panic!("draw exceeded screen bounds (y: {y}, {SCREEN_HEIGHT}");
     }
 
     canvas.set_draw_color(Color::RGB(colour.r, colour.g, colour.b));

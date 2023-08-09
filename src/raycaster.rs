@@ -245,15 +245,24 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
         }
 
-        let line_height: i32 = (SCREEN_HEIGHT as f64 / wall_dist) as i32;
+        let line_height: i32 = ((SCREEN_HEIGHT as f64 / wall_dist) as i32).clamp(0, SCREEN_HEIGHT as i32);
 
         //println!("{}", line_height);
+
+        //println!("lh: {line_height}");
 
         let mut draw_start = -line_height / 2 + SCREEN_HEIGHT as i32 / 2;
         if draw_start < 0 { draw_start = 0; }
 
         let mut draw_end = line_height / 2 + SCREEN_HEIGHT as i32 / 2;
         if draw_end < 0 { draw_end = 0; }
+
+        //println!("de: {draw_end}");
+
+        if draw_end > SCREEN_HEIGHT as i32 {
+            println!("lh: {line_height} de: {draw_end}");
+            println!("let line_height: i32 = ({SCREEN_HEIGHT} as f64 / {wall_dist} as i32");
+        }
 
 		let tex_index = MAP[map_pos.x as usize][map_pos.y as usize] - 1;	// -1 because on the map 0 is empty but the index 0 is used for textures
 
@@ -265,7 +274,7 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 			player.pos.x + wall_dist * ray_dir.x
 		};
 
-		println!("wall_x: {wall_x} floor: {}", wall_x.floor());
+		//println!("wall_x: {wall_x} floor: {}", wall_x.floor());
 
 		wall_x -= wall_x.floor();
 
@@ -273,9 +282,9 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
 		// x coord on the texture
 		let mut tex_x = (wall_x * TEX_WIDTH as f64) as i32;
-		if side == SideHit::XSide && ray_dir.x > 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; } else { println!("no XSide"); }
-		if side == SideHit::YSide && ray_dir.y < 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; } else { println!("no YSide") }
-		println!("tex_x: {tex_x}");
+		if side == SideHit::XSide && ray_dir.x > 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; } //else { println!("no XSide"); }
+		if side == SideHit::YSide && ray_dir.y < 0.0 { tex_x = TEX_WIDTH as i32 - tex_x - 1; } //else { println!("no YSide") }
+		//println!("tex_x: {tex_x}");
 
 		/*
 		affine texture mapping
@@ -288,7 +297,7 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
         // TODO i think the issue is with line height or draw_end being way too high (maybe from an overflow)
 
-        /*
+        ///*
 		for y in draw_start..draw_end {
 
 			let tex_y = tex_coord as i32 & (TEX_HEIGHT as i32 - 1);
@@ -298,7 +307,7 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 
 			let mut colour = /*CanvasColour::TEAL;*/scene.textures[tex_index as usize][TEX_HEIGHT as usize * tex_x as usize + tex_y as usize];
 
-            println!("{y}/{draw_end}");
+            //println!("{y}/{draw_end}");
 
             if colour.b != 0 {
                 //println!("{colour}");
@@ -308,16 +317,16 @@ pub fn update(screen: &mut Screen, scene: &mut Scene) {
 				colour = colour / 2;
 			}
 
-			//draw_pixel(screen, x as i32, y, colour);
-            draw_line(screen, x as i32, y, y, colour);
+			draw_pixel(screen, x as i32, y, colour);
+            //draw_line(screen, x as i32, y, y, colour);
 
 		}
-        */
-        println!("end");
+        //*/
+        //println!("end");
 
-        println!("start: {draw_start} end: {draw_end} line height: {line_height}");
+        //println!("start: {draw_start} end: {draw_end} line height: {line_height}");
 
-        draw_line(screen, x as i32, draw_start, draw_end, colour);
+        //draw_line(screen, x as i32, draw_start, draw_end, colour);
 
     }
 }
